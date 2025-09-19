@@ -14,11 +14,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -39,20 +37,20 @@ public class FeedbackControllerTest {
                 .role("Manager")
                 .department("IT")
                 .message("Test message")
-                .feedbackType(FeedbackType.COMPLAINT)
-                .criticality(5)
+                .feedbackType(FeedbackType.NEUTRAL)
+                .criticality(2)
                 .build();
 
         Page<FeedbackEntity> page = new PageImpl<>(List.of(entity));
 
         Mockito.when(feedbackService.getAllByFilter(
-                Mockito.nullable(String.class),
-                Mockito.nullable(String.class),
-                Mockito.nullable(String.class),
-                Mockito.nullable(Integer.class),
-                Mockito.nullable(LocalDateTime.class),
-                Mockito.nullable(LocalDateTime.class),
-                Mockito.any(Pageable.class)
+                anyString(),
+                anyString(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any(Pageable.class)
         )).thenReturn(page);
 
         mockMvc.perform(get("/feedbacks")
@@ -71,7 +69,7 @@ public class FeedbackControllerTest {
                         eq(5),
                         isNull(),
                         isNull(),
-                        Mockito.any(Pageable.class)
+                        any(Pageable.class)
                 );
     }
 }

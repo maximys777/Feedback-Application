@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-suggestion-column-to-feedback
+      author: maximys777
+      changes:
+        - addColumn:
+            tableName: feedbacks
+            columns:
+              - column:
+                  name: suggestion
+                  type: VARCHAR(255)
