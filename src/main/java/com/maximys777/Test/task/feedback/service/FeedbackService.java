@@ -1,9 +1,11 @@
 package com.maximys777.Test.task.feedback.service;
 
 import com.maximys777.Test.task.feedback.dto.request.FeedbackRequest;
+import com.maximys777.Test.task.feedback.dto.response.FeedbackAnalysisResponse;
 import com.maximys777.Test.task.feedback.entity.FeedbackEntity;
 import com.maximys777.Test.task.feedback.entity.common.FeedbackType;
 import com.maximys777.Test.task.feedback.repository.FeedbackRepository;
+import com.maximys777.Test.task.openai.service.ChatGPTService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,14 +19,18 @@ import java.time.LocalDateTime;
 public class FeedbackService {
 
     private final FeedbackRepository feedbackRepository;
+    private final ChatGPTService chatGPTService;
 
     public void createNewFeedback(FeedbackRequest request) {
+        FeedbackAnalysisResponse responseAnalysis = chatGPTService.analyzeFeedback(request.getMessage());
+
         FeedbackEntity entity = FeedbackEntity.builder()
                 .role(request.getRole())
                 .department(request.getDepartment())
                 .message(request.getMessage())
-                .feedbackType(FeedbackType.WISH)
-                .criticality(5)
+                .feedbackType(responseAnalysis.feedbackType())
+                .criticality(responseAnalysis.criticality())
+                .suggestion(responseAnalysis.suggestion())
                 .build();
 
         feedbackRepository.save(entity);
@@ -32,7 +38,7 @@ public class FeedbackService {
 
     public Page<FeedbackEntity> getAllByFilter(String role,
                                                String department,
-                                               String feedbackType,
+                                               FeedbackType feedbackType,
                                                Integer criticality,
                                                LocalDateTime createdFrom,
                                                LocalDateTime createdTo,
@@ -44,7 +50,7 @@ public class FeedbackService {
 
     private Specification<FeedbackEntity> specification(String role,
                                                         String department,
-                                                        String feedbackType,
+                                                        FeedbackType feedbackType,
                                                         Integer criticality,
                                                         LocalDateTime createdFrom,
                                                         LocalDateTime createdTo) {
@@ -62,7 +68,7 @@ public class FeedbackService {
 
         if (feedbackType != null) {
             spec = spec.and((root, query, cb) ->
-                    cb.like(cb.lower(root.get("feedbackType")), "%" + feedbackType.toLowerCase() + "%"));
+                    cb.equal(root.get("feedbackType"), feedbackType));
         }
 
         if (criticality != null) {
@@ -72,12 +78,12 @@ public class FeedbackService {
 
         if (createdFrom != null) {
             spec = spec.and((root, query, cb) ->
-                    cb.greaterThanOrEqualTo(root.get("created"), createdFrom));
+                    cb.greaterThanOrEqualTo(root.get("createdAt"), createdFrom));
         }
 
         if (createdTo != null) {
             spec = spec.and((root, query, cb) ->
-                    cb.lessThanOrEqualTo(root.get("created"), createdTo));
+                    cb.lessThanOrEqualTo(root.get("createdAt"), createdTo));
         }
 
         return spec;

@@ -31,11 +31,15 @@ public class FeedbackEntity {
     @Column(name = "message", nullable = false)
     private String message;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "feedback_type", nullable = false)
     private FeedbackType feedbackType;
 
     @Column(name = "criticality", nullable = false)
     private Integer criticality;
+
+    @Column(name = "suggestion", nullable = false)
+    private String suggestion;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
