@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Відгуки</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #191919;
+            color: #fff;
+            transition: background 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #222;
+            border-bottom: 1px solid #444;
+        }
+
+        .theme-toggle {
+            cursor: pointer;
+            padding: 5px 10px;
+            background: #444;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filters input, .filters select, .filters button {
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            background: #2a2a2a;
+            color: #fff;
+        }
+
+        .filters input::placeholder {
+            color: #bbb;
+        }
+
+        .filters button {
+            background: #444;
+            color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .card {
+            background: #222;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #333;
+            word-wrap: break-word;
+        }
+
+        .card h3 {
+            margin: 0 0 5px;
+            font-size: 1.1rem;
+        }
+
+        .card small {
+            color: #aaa;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            background: #222;
+            border-top: 1px solid #444;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        body.light {
+            background: #f5f5f5;
+            color: #111;
+        }
+
+        body.light header {
+            background: #eee;
+            border-bottom: 1px solid #ccc;
+        }
+
+        body.light .theme-toggle {
+            background: #ddd;
+            color: #111;
+        }
+
+        body.light .card {
+            background: #fff;
+            border: 1px solid #ccc;
+        }
+
+        body.light .filters input,
+        body.light .filters select {
+            background: #e6e6e6;
+            color: #111;
+        }
+
+        body.light .filters button {
+            background: #ddd;
+            color: #111;
+        }
+
+        body.light footer {
+            background: #eee;
+            border-top: 1px solid #ccc;
+            color: #555;
+        }
+
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pagination button {
+            min-width: 110px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background: #444;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #666;
+            transform: translateY(-2px);
+        }
+
+        .pagination button:disabled {
+            background: #2a2a2a;
+            color: #777;
+            cursor: not-allowed;
+        }
+
+        .pagination span {
+            font-size: 0.95rem;
+            color: #bbb;
+        }
+
+        body.light .pagination button {
+            background: #ddd;
+            color: #111;
+        }
+
+        body.light .pagination button:hover:not(:disabled) {
+            background: #ccc;
+        }
+
+        body.light .pagination button:disabled {
+            background: #eee;
+            color: #999;
+        }
+
+        body.light .pagination span {
+            color: #555;
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.2rem;
+            }
+
+            .filters {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Відгуки</h1>
+    <button class="theme-toggle">Світла/Темна</button>
+</header>
+<main>
+    <section class="filters">
+        <input type="text" id="role" placeholder="Роль">
+        <input type="text" id="department" placeholder="Відділ">
+        <select id="feedbackType">
+            <option value="">Тип відгуку</option>
+            <option value="POSITIVE">Позитивний</option>
+            <option value="NEGATIVE">Негативний</option>
+            <option value="NEUTRAL">Нейтральний</option>
+        </select>
+        <select id="criticality">
+            <option value="">Критичність</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+        <input type="date" id="createdFrom">
+        <input type="date" id="createdTo">
+        <button onclick="applyFilters()">Фільтрувати</button>
+    </section>
+
+    <div id="feedbacks-container">
+        <p>Завантаження...</p>
+    </div>
+</main>
+<footer>
+    Дякую моєму розробнику <b>maximys777</b> за це творіння
+</footer>
+
+<script>
+    const API_URL = "http://localhost:8080/feedbacks";
+    const feedbackTypeMap = {
+        "POSITIVE": "Позитивний",
+        "NEGATIVE": "Негативний",
+        "NEUTRAL": "Нейтральний"
+    };
+
+    let currentPage = 0;
+    let totalPages = 0;
+
+    async function loadFeedbacks(params = {}, page = 0) {
+        try {
+            params.page = page;
+            params.size = 5; // по 5 відгуків
+            const query = new URLSearchParams(params).toString();
+            const response = await fetch(`${API_URL}?${query}`);
+            if (!response.ok) throw new Error("Помилка завантаження");
+            const data = await response.json();
+            currentPage = data.number;
+            totalPages = data.totalPages;
+            renderCards(data.content);
+            renderPagination();
+        } catch (err) {
+            document.getElementById("feedbacks-container").innerHTML = `<p style="color:red">${err.message}</p>`;
+        }
+    }
+
+    function renderCards(feedbacks) {
+        const container = document.getElementById("feedbacks-container");
+        if (!feedbacks || feedbacks.length === 0) {
+            container.innerHTML = "<p>Немає даних</p>";
+            return;
+        }
+
+        container.innerHTML = feedbacks.map(f => `
+      <div class="card">
+        <h3>${f.role ?? "-"} (${f.department ?? "-"})</h3>
+        <p><b>Тип:</b> ${feedbackTypeMap[f.feedbackType] ?? f.feedbackType}</p>
+        <p><b>Критичність:</b> ${f.criticality ?? "-"}</p>
+        <p><b>Повідомлення:</b> ${f.message ?? "-"}</p>
+        <p><b>Пропозиція:</b> ${f.suggestion ?? "-"}</p>
+        <small>${formatDate(f.createdAt)}</small>
+      </div>
+    `).join("");
+    }
+
+    function renderPagination() {
+        const container = document.getElementById("feedbacks-container");
+        const pagination = document.createElement("div");
+        pagination.className = "pagination";
+
+        pagination.innerHTML = `
+        <button onclick="prevPage()" ${currentPage === 0 ? "disabled" : ""}>⟨ Попередня</button>
+        <span>Сторінка ${currentPage + 1} з ${totalPages}</span>
+        <button onclick="nextPage()" ${currentPage >= totalPages - 1 ? "disabled" : ""}>Наступна ⟩</button>
+    `;
+        container.appendChild(pagination);
+    }
+
+
+    function prevPage() {
+        if (currentPage > 0) {
+            applyFilters(currentPage - 1);
+        }
+    }
+
+    function nextPage() {
+        if (currentPage < totalPages - 1) {
+            applyFilters(currentPage + 1);
+        }
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return "-";
+        const d = new Date(dateStr);
+        const pad = n => n.toString().padStart(2, "0");
+        return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function applyFilters(page = 0) {
+        const params = {};
+        const role = document.getElementById("role").value;
+        const department = document.getElementById("department").value;
+        const feedbackType = document.getElementById("feedbackType").value;
+        const criticality = document.getElementById("criticality").value;
+        const createdFrom = document.getElementById("createdFrom").value;
+        const createdTo = document.getElementById("createdTo").value;
+
+        if (role) params.role = role;
+        if (department) params.department = department;
+        if (feedbackType) params.feedbackType = feedbackType;
+        if (criticality) params.criticality = criticality;
+        if (createdFrom) params.createdFrom = createdFrom + "T00:00:00";
+        if (createdTo) params.createdTo = createdTo + "T23:59:59";
+
+        loadFeedbacks(params, page);
+    }
+
+    document.querySelector(".theme-toggle").addEventListener("click", () => {
+        document.body.classList.toggle("light");
+    });
+
+    loadFeedbacks();
+</script>
+
+</body>
+</html>
