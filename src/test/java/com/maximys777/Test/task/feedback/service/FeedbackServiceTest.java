@@ -5,7 +5,9 @@ import com.maximys777.Test.task.feedback.dto.response.FeedbackAnalysisResponse;
 import com.maximys777.Test.task.feedback.entity.FeedbackEntity;
 import com.maximys777.Test.task.feedback.entity.common.FeedbackType;
 import com.maximys777.Test.task.feedback.repository.FeedbackRepository;
+import com.maximys777.Test.task.googledocs.service.GoogleDocsService;
 import com.maximys777.Test.task.openai.service.ChatGPTService;
+import com.maximys777.Test.task.trello.service.TrelloService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,11 +33,17 @@ public class FeedbackServiceTest {
     @Mock
     private ChatGPTService chatGPTService;
 
+    @Mock
+    private GoogleDocsService googleDocsService;
+
+    @Mock
+    private TrelloService trelloService;
+
     @InjectMocks
     private FeedbackService feedbackService;
 
     @Test
-    void createNewFeedback_ShouldCreateNewFeedback_WhenSuccess() {
+    void createNewFeedback_ShouldCreateNewFeedbackAndSendToGoogleDocs_WhenCriticalityLow() {
         FeedbackRequest request = new FeedbackRequest();
         request.setRole("Test");
         request.setDepartment("Test");
@@ -51,6 +59,36 @@ public class FeedbackServiceTest {
 
         Mockito.verify(feedbackRepository, Mockito.times(1))
                 .save(Mockito.any(FeedbackEntity.class));
+
+        Mockito.verify(googleDocsService, Mockito.times(1))
+                .appendFeedback(Mockito.any(FeedbackEntity.class));
+
+        Mockito.verify(trelloService, Mockito.never())
+                .createCardForFeedback(Mockito.any());
+    }
+
+    @Test
+    void createNewFeedback_ShouldSaveAndSendToGoogleDocsAndTrello_WhenCriticalityHigh() {
+        FeedbackRequest request = new FeedbackRequest();
+        request.setRole("Test");
+        request.setDepartment("Test");
+        request.setMessage("Test");
+
+        FeedbackAnalysisResponse response = new FeedbackAnalysisResponse(FeedbackType.NEGATIVE, 5, "Test");
+
+        Mockito.when(chatGPTService.analyzeFeedback("Test"))
+                .thenReturn(response);
+
+        feedbackService.createNewFeedback(request);
+
+        Mockito.verify(feedbackRepository, Mockito.times(1))
+                .save(Mockito.any(FeedbackEntity.class));
+
+        Mockito.verify(googleDocsService, Mockito.times(1))
+                .appendFeedback(Mockito.any(FeedbackEntity.class));
+
+        Mockito.verify(trelloService, Mockito.times(1))
+                .createCardForFeedback(Mockito.any());
     }
 
     @Test

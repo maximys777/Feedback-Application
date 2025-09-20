@@ -130,6 +130,61 @@
             color: #555;
         }
 
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pagination button {
+            min-width: 110px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background: #444;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #666;
+            transform: translateY(-2px);
+        }
+
+        .pagination button:disabled {
+            background: #2a2a2a;
+            color: #777;
+            cursor: not-allowed;
+        }
+
+        .pagination span {
+            font-size: 0.95rem;
+            color: #bbb;
+        }
+
+        body.light .pagination button {
+            background: #ddd;
+            color: #111;
+        }
+
+        body.light .pagination button:hover:not(:disabled) {
+            background: #ccc;
+        }
+
+        body.light .pagination button:disabled {
+            background: #eee;
+            color: #999;
+        }
+
+        body.light .pagination span {
+            color: #555;
+        }
+
         @media (max-width: 600px) {
             header h1 {
                 font-size: 1.2rem;
@@ -189,13 +244,21 @@
         "NEUTRAL": "Нейтральний"
     };
 
-    async function loadFeedbacks(params = {}) {
+    let currentPage = 0;
+    let totalPages = 0;
+
+    async function loadFeedbacks(params = {}, page = 0) {
         try {
+            params.page = page;
+            params.size = 5; // по 5 відгуків
             const query = new URLSearchParams(params).toString();
             const response = await fetch(`${API_URL}?${query}`);
             if (!response.ok) throw new Error("Помилка завантаження");
             const data = await response.json();
+            currentPage = data.number;
+            totalPages = data.totalPages;
             renderCards(data.content);
+            renderPagination();
         } catch (err) {
             document.getElementById("feedbacks-container").innerHTML = `<p style="color:red">${err.message}</p>`;
         }
@@ -220,6 +283,32 @@
     `).join("");
     }
 
+    function renderPagination() {
+        const container = document.getElementById("feedbacks-container");
+        const pagination = document.createElement("div");
+        pagination.className = "pagination";
+
+        pagination.innerHTML = `
+        <button onclick="prevPage()" ${currentPage === 0 ? "disabled" : ""}>⟨ Попередня</button>
+        <span>Сторінка ${currentPage + 1} з ${totalPages}</span>
+        <button onclick="nextPage()" ${currentPage >= totalPages - 1 ? "disabled" : ""}>Наступна ⟩</button>
+    `;
+        container.appendChild(pagination);
+    }
+
+
+    function prevPage() {
+        if (currentPage > 0) {
+            applyFilters(currentPage - 1);
+        }
+    }
+
+    function nextPage() {
+        if (currentPage < totalPages - 1) {
+            applyFilters(currentPage + 1);
+        }
+    }
+
     function formatDate(dateStr) {
         if (!dateStr) return "-";
         const d = new Date(dateStr);
@@ -227,7 +316,7 @@
         return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
 
-    function applyFilters() {
+    function applyFilters(page = 0) {
         const params = {};
         const role = document.getElementById("role").value;
         const department = document.getElementById("department").value;
@@ -243,7 +332,7 @@
         if (createdFrom) params.createdFrom = createdFrom + "T00:00:00";
         if (createdTo) params.createdTo = createdTo + "T23:59:59";
 
-        loadFeedbacks(params);
+        loadFeedbacks(params, page);
     }
 
     document.querySelector(".theme-toggle").addEventListener("click", () => {
@@ -252,5 +341,6 @@
 
     loadFeedbacks();
 </script>
+
 </body>
 </html>

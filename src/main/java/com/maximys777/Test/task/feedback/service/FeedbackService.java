@@ -7,6 +7,7 @@ import com.maximys777.Test.task.feedback.entity.common.FeedbackType;
 import com.maximys777.Test.task.feedback.repository.FeedbackRepository;
 import com.maximys777.Test.task.googledocs.service.GoogleDocsService;
 import com.maximys777.Test.task.openai.service.ChatGPTService;
+import com.maximys777.Test.task.trello.service.TrelloService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ public class FeedbackService {
     private final FeedbackRepository feedbackRepository;
     private final ChatGPTService chatGPTService;
     private final GoogleDocsService googleDocsService;
+    private final TrelloService trelloService;
 
     public void createNewFeedback(FeedbackRequest request) {
         FeedbackAnalysisResponse responseAnalysis = chatGPTService.analyzeFeedback(request.getMessage());
@@ -38,6 +40,10 @@ public class FeedbackService {
         feedbackRepository.save(entity);
 
         googleDocsService.appendFeedback(entity);
+
+        if (entity.getCriticality() >= 4) {
+            trelloService.createCardForFeedback(entity);
+        }
     }
 
     public Page<FeedbackEntity> getAllByFilter(String role,
