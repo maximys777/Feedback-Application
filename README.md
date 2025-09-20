@@ -20,6 +20,8 @@
 
 Щоб підключитися до локальної БД можна заповнити ці поля наступим чином.
 
+Підключення та створення БД обов'язкове.
+
 <img width="598" height="89" alt="4" src="https://github.com/user-attachments/assets/2703d29a-04c2-418e-b4a5-f11a9580accc" />
 
 Щоб підключити ChatGPT у проект, потрібно перейти за посиланням та зарєеструвати акаунт - https://platform.openai.com/
@@ -86,8 +88,9 @@
 
 Після успішного створення проекту вас перекине до API keys де потрібно сгенерувати його та вставити до **TRELLO_KEY** у проекті.
 
-За наступним посиланням вам потрібно отримати токен - https://trello.com/1/authorize?expiration=never&name=FeedbackApp&scope=read,write&response_type=token&key=<API_KEY>
-Замість **<API_KEY>** вставити ваш API ключ який ви отримали раніше. та нажати Allow
+За наступним посиланням вам потрібно отримати токен - https://trello.com/1/authorize?expiration=never&name=FeedbackApp&scope=read,write&response_type=token&key=API_KEY
+
+Замість **API_KEY** вставити ваш API ключ який ви отримали раніше. та нажати Allow
 
 <img width="534" height="296" alt="image" src="https://github.com/user-attachments/assets/08a19187-b054-4bdb-b1d8-2b61afa9816a" />
 
@@ -99,14 +102,17 @@
 
 Створіть нову карточку, куди будуть записуватись критичні відгуки.
 
-Щоб отримати id карточки, потрібно перейти за наступним посиланням - https://api.trello.com/1/boards/<BOARD_ID>/lists?key=<API_KEY>&token=<TOKEN>
-У поле <BOARD_ID> вам потрібно ввести айді дошки. Щоб дізнатись його, потрібно зайти у свою створену дошку та скопіювати наступне
+Щоб отримати id карточки, потрібно перейти за наступним посиланням - https://api.trello.com/1/boards/BOARD_ID/lists?key=API_KEY&token=TOKEN
+
+У поле BOARD_ID вам потрібно ввести айді дошки. Щоб дізнатись його, потрібно зайти у свою створену дошку та скопіювати наступне
 
 <img width="393" height="43" alt="image" src="https://github.com/user-attachments/assets/4d817bfb-3c57-4fc4-bf76-78e302865e35" />
 
-Замість полів <API_KEY> <TOKEN> вам потрібно ввести раніше отримані данні.
+Замість полів API_KEY TOKEN вам потрібно ввести раніше отримані данні.
 
 Якщо ви ввели все вірно, ви повинні отримані ось такі поля у браузері, де потрібно лише поле id, яке потрібно скопіювати у **TRELLO_LIST_ID**
 <img width="310" height="259" alt="image" src="https://github.com/user-attachments/assets/913db365-cc9c-4202-b472-2557c1ad66be" />
 
 На даному етапі проект сконфігуровано та ним можна користуватися.
+
+Адмін панель знаходиться за посиланням - http://localhost:8080/main.html
