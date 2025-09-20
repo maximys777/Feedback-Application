@@ -5,6 +5,7 @@ import com.maximys777.Test.task.feedback.dto.response.FeedbackAnalysisResponse;
 import com.maximys777.Test.task.feedback.entity.FeedbackEntity;
 import com.maximys777.Test.task.feedback.entity.common.FeedbackType;
 import com.maximys777.Test.task.feedback.repository.FeedbackRepository;
+import com.maximys777.Test.task.googledocs.service.GoogleDocsService;
 import com.maximys777.Test.task.openai.service.ChatGPTService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ public class FeedbackService {
 
     private final FeedbackRepository feedbackRepository;
     private final ChatGPTService chatGPTService;
+    private final GoogleDocsService googleDocsService;
 
     public void createNewFeedback(FeedbackRequest request) {
         FeedbackAnalysisResponse responseAnalysis = chatGPTService.analyzeFeedback(request.getMessage());
@@ -34,6 +36,8 @@ public class FeedbackService {
                 .build();
 
         feedbackRepository.save(entity);
+
+        googleDocsService.appendFeedback(entity);
     }
 
     public Page<FeedbackEntity> getAllByFilter(String role,
