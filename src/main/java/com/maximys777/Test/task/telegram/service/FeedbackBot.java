@@ -43,28 +43,28 @@ public class FeedbackBot implements LongPollingSingleThreadUpdateConsumer {
             switch (currentState) {
                 case START:
                     if (message.equals("/start")) {
-                        response.setText("Please type your role.");
+                        response.setText("Введіть вашу посаду.");
                         chatState.put(chatId, FeedbackState.AWAITING_ROLE);
                     } else {
-                        response.setText("Please type /start to begin.");
+                        response.setText("Напишіть /start щоб залишити анонімний відгук");
                     }
                     break;
                 case AWAITING_ROLE:
                     request.setRole(message);
                     feedbackRequest.put(chatId, request);
-                    response.setText("Please type your department.");
+                    response.setText("Введіть вашу філію (Назва відділення).");
                     chatState.put(chatId, FeedbackState.AWAITING_DEPARTMENT);
                     break;
                 case AWAITING_DEPARTMENT:
                     request.setDepartment(message);
                     feedbackRequest.put(chatId, request);
-                    response.setText("Please type your message.");
+                    response.setText("Напишіть ваш відгук.");
                     chatState.put(chatId, FeedbackState.AWAITING_MESSAGE);
                     break;
                 case AWAITING_MESSAGE:
                     request.setMessage(message);
                     feedbackRequest.put(chatId, request);
-                    response.setText("Thank you for your feedback.");
+                    response.setText("Дякуємо за ваш анонімний відгук.");
                     feedbackService.createNewFeedback(request);
                     chatState.remove(chatId);
                     feedbackRequest.remove(chatId);
